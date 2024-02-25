@@ -128,6 +128,10 @@
                 graphics.fillPoly(x, y-27, x-28, y-5, x-18, y+27, x+18, y+27, x+28, y-5);
                 graphics.strokePoly(x, y-27, x-28, y-5, x-18, y+27, x+18, y+27, x+28, y-5);
             }
+            else if (polygonChoice == 2) {
+                graphics.fillPoly(x, y - 27, x - 16, y - 20, x - 28, y - 5, x - 23, y + 16, x - 8, y + 27, x + 8, y + 27, x + 23, y + 16, x + 28, y - 5, x + 16, y - 20);
+                graphics.strokePoly(x, y - 27, x - 16, y - 20, x - 28, y - 5, x - 23, y + 16, x - 8, y + 27, x + 8, y + 27, x + 23, y + 16, x + 28, y - 5, x + 16, y - 20);
+            }
             
             /*------------------------------------------------------------*/
             
@@ -280,6 +284,7 @@
     <select id="polygonChoice">
         <option value="0" selected="selected">Square</option>
         <option value="1">Pentagon</option>
+        <option value="2">Nonagon</option>
     </select>
     <button id="clearButton">Clear</button>
 </p>
