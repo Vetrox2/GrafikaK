@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<head>
+<meta charset="UTF-8">
+<title>Lab 9</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.115/examples/js/controls/OrbitControls.js"></script>
+<script>
+
+"use strict";
+
+var canvas, renderer, scene, camera; // Standard three.js requirements.
+
+var controls;  // An OrbitControls object that is used to implement
+               // rotation of the scene using the mouse.  (It actually rotates
+               // the camera around the scene.)
+
+var animating = false;  // Set to true when an animation is in progress.
+var frameNumber = 0;  // Frame number is advanced by 1 for each frame while animating.
+
+var  obb;
+var pawn = new THREE.Group();
+var pawnMaterial = new THREE.MeshPhongMaterial({ color: "white" });
+
+/**
+ *  The render function draws the scene.
+ */
+function render() {
+    renderer.render(scene, camera);
+}
+
+function CreateCylinderPart(downR, upR,height,slices,downPointY){
+    var pawnGeo = new THREE.CylinderGeometry(upR,downR, height, slices);
+    var pawnPart = new THREE.Mesh(pawnGeo, pawnMaterial);
+    pawnPart.position.y= downPointY + 0.5*height;
+    pawn.add(pawnPart);
+}
+
+function CreateLathePart(points,slices,downPointY){
+    var pawnGeo = new THREE.LatheGeometry(points, slices);
+    var pawnPart = new THREE.Mesh(pawnGeo, pawnMaterial);
+    pawnPart.position.y= downPointY;
+    pawn.add(pawnPart);
+}
+
+
+/**
+ * This function is called by the init() method to create the world. 
+ */
+function createWorld() {
+    
+    renderer.setClearColor("black"); // Background color for scene.
+    scene = new THREE.Scene();
+    
+    // ------------------- Make a camera with viewpoint light ----------------------
+    
+    camera = new THREE.PerspectiveCamera(30, canvas.width/canvas.height, 0.1, 100);
+    camera.position.z = 30;
+    var light;  // A light shining from the direction of the camera; moves with the camera.
+    light = new THREE.DirectionalLight();
+    light.position.set(0,0,1);
+    camera.add(light);
+    scene.add(camera);
+    
+    //------------------- Create the scene's visible objects ----------------------
+    
+    //Base
+    CreateCylinderPart(2, 2, 0.2, 100, -4);
+    CreateCylinderPart(2.1, 2.1, 0.4, 100, -3.8);
+    CreateCylinderPart(2, 2, 0.3, 100, -3.4);
+
+    //Pillar
+    var points = [];
+    points.push(new THREE.Vector2(1.9, 0));
+    points.push(new THREE.Vector2(1.2, 1.2));
+    points.push(new THREE.Vector2(0.9, 2.5));
+    points.push(new THREE.Vector2(0.8, 4.5));
+    var curve = new THREE.CatmullRomCurve3(points, false, "catmullrom");
+    var curvePoints = curve.getPoints(50);
+    CreateLathePart(curvePoints,100,-3.1);
+
+    CreateCylinderPart(1.6, 1.6, 0.3, 100, 1.4);
+
+    //Head
+    CreateCylinderPart(0.8, 0.8, 0.2, 100, 1.7);
+    
+    points = [];
+    points.push(new THREE.Vector2(0.8, 0));
+    points.push(new THREE.Vector2(1.8, 1.5));
+    points.push(new THREE.Vector2(0, 3));
+    var curve = new THREE.CatmullRomCurve3(points, false, "catmullrom");
+    var curvePoints = curve.getPoints(50);
+    CreateLathePart(curvePoints,100,1.9);
+    
+    scene.add(pawn);
+} 
+
+/* ---------------------------- MOUSE AND ANIMATION SUPPORT ------------------
+
+/**
+ *  This page uses THREE.OrbitControls to let the user use the mouse to rotate
+ *  the view.  OrbitControls are designed to be used during an animation, where
+ *  the rotation is updated as part of preparing for the next frame.  The scene
+ *  is not automatically updated just because the user drags the mouse.  To get
+ *  the rotation to work without animation, I add another mouse listener to the
+ *  canvas, just to call the render() function when the user drags the mouse.
+ *  The same thing holds for touch events -- I call render for any mouse move
+ *  event with one touch.
+ */
+function installOrbitControls() {
+    controls = new THREE.OrbitControls(camera,canvas);
+    controls.noPan = true; 
+    controls.noZoom = true;
+    controls.staticMoving = true;
+    function move() {
+        controls.update();
+        if (! animating) {
+            render();
+        }
+    }
+    function down() {
+        document.addEventListener("mousemove", move, false);
+    }
+    function up() {
+        document.removeEventListener("mousemove", move, false);
+    }
+    function touch(event) {
+        if (event.touches.length == 1) {
+            move();
+        }
+    }
+    canvas.addEventListener("mousedown", down, false);
+    canvas.addEventListener("touchmove", touch, false);
+}
+
+function init() {
+    try {
+        canvas = document.getElementById("glcanvas");
+        renderer = new THREE.WebGLRenderer({
+            canvas: canvas,
+            antialias: true,
+            alpha: false
+        });
+    }
+    catch (e) {
+        document.getElementById("message").innerHTML="<b>Sorry, an error occurred:<br>" +
+                e + "</b>";
+        return;
+    }
+    createWorld();
+    installOrbitControls();
+    render();
+}
+
+</script>
+</head>
+<body onload="init()">
+
+<h2>Three.js Pawn</h2>
+
+<noscript>
+   <p style="color: #AA0000; font-weight: bold">Sorry, but this page requires JavaScript!</p>
+</noscript>
+
+<p style="color:#AA0000; font-weight: bold" id="message">
+</p>
+
+<p>
+   <b>Use the mouse to rotate the model.</b>
+</p>
+
+<div id="canvas-holder" style="float:left; border: thin solid black; background-color: white">
+   <canvas width=1200 height=600 id="glcanvas"></canvas>
+</div>
+
+</body>
+</html>
